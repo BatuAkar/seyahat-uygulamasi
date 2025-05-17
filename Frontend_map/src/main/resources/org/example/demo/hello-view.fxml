@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.web.WebView?>
+<?import javafx.collections.*?>
+<?import java.lang.String?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="org.example.demo.HelloController"
+      spacing="5" alignment="CENTER">
+
+
+
+    <!-- WebView ile Harita Görüntüleme -->
+    <WebView fx:id="webView" prefWidth="600" prefHeight="400" />
+<!-- Ensure the javafx-web module is added to your project dependencies -->
+
+</VBox>

@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Harita</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            overflow: hidden; /* Kaydırma çubuğunu kaldır */
+        }
+        #header {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+            font-size: 20px;
+            font-weight: bold;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            height: 30px; /* Sabit başlık yüksekliği */
+        }
+        #map {
+            height: calc(100% - 45px); /* Başlık yüksekliğini çıkar */
+            margin-top: 45px; /* Başlık için boşluk */
+        }
+        .infoLabel {
+            background: #eee;
+            padding: 6px 10px;
+            font-weight: bold;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+        }
+        .distanceLabel {
+            background: #eee;
+            padding: 6px 10px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+        }
+        .clearButton {
+            background: #f44336;
+            color: white;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+        }
+        .clearButton:hover {
+            background: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+<div id="header">SEYAHAT ROTASI UYGULAMASI</div>
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    var map = L.map('map').setView([39.0, 35.0], 6); // Türkiye ortası
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    var cities = [
+        { name: "Adana", lat: 37.00167, lon: 35.32889 },
+        { name: "Adıyaman", lat: 37.76483, lon: 38.27862 },
+        { name: "Afyonkarahisar", lat: 38.76538, lon: 30.54007 },
+        { name: "Ağrı", lat: 39.71909, lon: 43.05166 },
+        { name: "Amasya", lat: 40.65204, lon: 35.83331 },
+        { name: "Ankara", lat: 39.92722, lon: 32.86444 },
+        { name: "Antalya", lat: 36.88414, lon: 30.70563 },
+        { name: "Artvin", lat: 41.18284, lon: 41.81862 },
+        { name: "Aydın", lat: 37.84439, lon: 27.84564 },
+        { name: "Balıkesir", lat: 39.64843, lon: 27.88261 },
+        { name: "Bilecik", lat: 40.15083, lon: 29.97806 },
+        { name: "Bingöl", lat: 38.88546, lon: 40.49899 },
+        { name: "Bitlis", lat: 38.39312, lon: 42.12394 },
+        { name: "Bolu", lat: 40.73556, lon: 31.61111 },
+        { name: "Burdur", lat: 37.72028, lon: 30.29028 },
+        { name: "Bursa", lat: 40.19583, lon: 29.06028 },
+        { name: "Çanakkale", lat: 40.14648, lon: 26.40321 },
+        { name: "Çankırı", lat: 40.60278, lon: 33.61306 },
+        { name: "Çorum", lat: 40.55028, lon: 34.95556 },
+        { name: "Denizli", lat: 37.77652, lon: 29.08640 },
+        { name: "Diyarbakır", lat: 37.91439, lon: 40.23000 },
+        { name: "Edirne", lat: 41.68222, lon: 26.56278 },
+        { name: "Elazığ", lat: 38.67422, lon: 39.22222 },
+        { name: "Erzincan", lat: 39.75000, lon: 39.50000 },
+        { name: "Erzurum", lat: 39.90000, lon: 41.27000 },
+        { name: "Eskişehir", lat: 39.77667, lon: 30.52000 },
+        { name: "Gaziantep", lat: 37.06623, lon: 37.38332 },
+        { name: "Giresun", lat: 40.91250, lon: 38.38944 },
+        { name: "Gümüşhane", lat: 40.46000, lon: 39.48167 },
+        { name: "Hakkari", lat: 37.57472, lon: 43.74056 },
+        { name: "Hatay", lat: 36.20250, lon: 36.16083 },
+        { name: "Isparta", lat: 37.76444, lon: 30.55611 },
+        { name: "Mersin", lat: 36.79972, lon: 34.61861 },
+        { name: "İstanbul", lat: 41.01384, lon: 28.94966 },
+        { name: "İzmir", lat: 38.41922, lon: 27.12872 },
+        { name: "Kars", lat: 40.60111, lon: 43.09750 },
+        { name: "Kastamonu", lat: 41.37944, lon: 33.77528 },
+        { name: "Kayseri", lat: 38.73123, lon: 35.47871 },
+        { name: "Kırklareli", lat: 41.73306, lon: 27.22611 },
+        { name: "Kırşehir", lat: 39.14222, lon: 34.16333 },
+        { name: "Kocaeli", lat: 40.76667, lon: 29.91667 },
+        { name: "Konya", lat: 37.87134, lon: 32.48487 },
+        { name: "Kütahya", lat: 39.42000, lon: 29.98333 },
+        { name: "Malatya", lat: 38.35556, lon: 38.30972 },
+        { name: "Manisa", lat: 38.61944, lon: 27.42889 },
+        { name: "Kahramanmaraş", lat: 37.57389, lon: 36.93722 },
+        { name: "Mardin", lat: 37.31222, lon: 40.73444 },
+        { name: "Muğla", lat: 37.21528, lon: 28.36361 },
+        { name: "Muş", lat: 38.94639, lon: 41.75361 },
+        { name: "Nevşehir", lat: 38.62444, lon: 34.71250 },
+        { name: "Niğde", lat: 37.96667, lon: 34.68333 },
+        { name: "Ordu", lat: 40.98417, lon: 37.87944 },
+        { name: "Rize", lat: 41.02000, lon: 40.52111 },
+        { name: "Sakarya", lat: 40.77833, lon: 30.40306 },
+        { name: "Samsun", lat: 41.28611, lon: 36.33 },
+        { name: "Siirt", lat: 37.93333, lon: 41.95000 },
+        { name: "Sinop", lat: 42.02306, lon: 35.15111 },
+        { name: "Sivas", lat: 39.75000, lon: 37.01667 },
+        { name: "Tekirdağ", lat: 40.98333, lon: 27.51667 },
+        { name: "Tokat", lat: 40.31667, lon: 36.55000 },
+        { name: "Trabzon", lat: 41.00222, lon: 39.71778 },
+        { name: "Tunceli", lat: 39.10972, lon: 39.54167 },
+        { name: "Şanlıurfa", lat: 37.16722, lon: 38.79583 },
+        { name: "Uşak", lat: 38.67639, lon: 29.40861 },
+        { name: "Van", lat: 38.49417, lon: 43.38000 },
+        { name: "Yozgat", lat: 39.81833, lon: 34.81472 },
+        { name: "Zonguldak", lat: 41.45194, lon: 31.78944 },
+        { name: "Aksaray", lat: 38.36806, lon: 34.03639 },
+        { name: "Bayburt", lat: 40.25528, lon: 40.22417 },
+        { name: "Karaman", lat: 37.18111, lon: 33.21528 },
+        { name: "Kırıkkale", lat: 39.84611, lon: 33.51583 },
+        { name: "Batman", lat: 37.88778, lon: 41.13222 },
+        { name: "Şırnak", lat: 37.41889, lon: 42.49167 },
+        { name: "Bartın", lat: 41.58111, lon: 32.46111 },
+        { name: "Ardahan", lat: 41.11083, lon: 42.70278 },
+        { name: "Iğdır", lat: 39.92333, lon: 44.05111 },
+        { name: "Yalova", lat: 40.65000, lon: 29.26667 },
+        { name: "Karabük", lat: 41.20472, lon: 32.62000 },
+        { name: "Kilis", lat: 36.71806, lon: 37.12194 },
+        { name: "Osmaniye", lat: 37.07444, lon: 36.24222 },
+        { name: "Düzce", lat: 40.84333, lon: 31.15611 }
+    ];
+
+    let clickCount = 0;
+    let startMarker = null;
+    let endMarker = null;
+    let routePolyline = null;
+    let cityMarkers = L.layerGroup().addTo(map); // Şehir marker'larını tutmak için grup
+
+    // Şehirlerin noktalarını koyma
+    cities.forEach(function(city) {
+        let marker = L.circleMarker([city.lat, city.lon], {
+            radius: 3,
+            fillColor: "#0000FF",
+            color: "#0000FF",
+            weight: 1,
+            opacity: 1,
+            fillOpacity: 0.8
+        })
+        .bindPopup(city.name);
+        cityMarkers.addLayer(marker); // Şehir marker'larını gruba ekle
+
+        // Marker'a tıklama olayı
+        marker.on('click', function() {
+            clickCount++;
+
+            if (clickCount === 1) {
+                if (startMarker) map.removeLayer(startMarker);
+                startMarker = L.circleMarker([city.lat, city.lon], {
+                    radius: 8,
+                    fillColor: "green",
+                    color: "green",
+                    weight: 1,
+                    fillOpacity: 0.9
+                }).addTo(map).bindPopup("Başlangıç: " + city.name).openPopup();
+                infoLabel._div.innerHTML = 'Bitiş konumunu seçin';
+                distanceLabel._div.innerHTML = 'Mesafe: -';
+                // JavaFX'e bildir
+                if (window.javafx) {
+                    window.javafx.citySelected('start', city.name, city.lat, city.lon);
+                }
+            } else if (clickCount === 2) {
+                if (endMarker) map.removeLayer(endMarker);
+                endMarker = L.circleMarker([city.lat, city.lon], {
+                    radius: 8,
+                    fillColor: "red",
+                    color: "red",
+                    weight: 1,
+                    fillOpacity: 0.9
+                }).addTo(map).bindPopup("Bitiş: " + city.name).openPopup();
+                infoLabel._div.innerHTML = 'Seçim tamamlandı!';
+                // JavaFX'e bildir
+                if (window.javafx) {
+                    window.javafx.citySelected('end', city.name, city.lat, city.lon);
+                }
+                // OSRM ile rota çiz
+                if (routePolyline) map.removeLayer(routePolyline);
+                console.log('Rota isteniyor: Başlangıç (' + startMarker.getLatLng().lat + ', ' + startMarker.getLatLng().lng + '), Bitiş (' + endMarker.getLatLng().lat + ', ' + endMarker.getLatLng().lng + ')');
+                fetch(`http://router.project-osrm.org/route/v1/driving/${startMarker.getLatLng().lng},${startMarker.getLatLng().lat};${endMarker.getLatLng().lng},${endMarker.getLatLng().lat}?overview=full&geometries=geojson`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.routes && data.routes.length > 0) {
+                            let route = data.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]);
+                            let distance = (data.routes[0].distance / 1000).toFixed(2); // Metreyi kilometreye çevir
+                            console.log('Rota koordinatları alındı:', route, 'Mesafe:', distance + ' km');
+                            routePolyline = L.polyline(route, {
+                                color: 'blue',
+                                weight: 4,
+                                opacity: 0.7
+                            }).addTo(map);
+                            distanceLabel._div.innerHTML = `Mesafe: ${distance} km`; // Mesafeyi label'a yaz
+                            map.fitBounds(routePolyline.getBounds()); // Haritayı rotaya göre yakınlaştır
+                        } else {
+                            console.error('Rota bulunamadı:', data);
+                            infoLabel._div.innerHTML = 'Rota hesaplanamadı!';
+                            distanceLabel._div.innerHTML = 'Mesafe: -';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('OSRM hatası:', error);
+                        infoLabel._div.innerHTML = 'Rota alınamadı, internet bağlantısını kontrol edin!';
+                        distanceLabel._div.innerHTML = 'Mesafe: -';
+                    });
+            } else {
+                // Sıfırlama
+                clickCount = 0;
+                if (startMarker) map.removeLayer(startMarker);
+                if (endMarker) map.removeLayer(endMarker);
+                if (routePolyline) map.removeLayer(routePolyline);
+                infoLabel._div.innerHTML = 'Başlangıç konumunu seçin';
+                distanceLabel._div.innerHTML = 'Mesafe: -';
+            }
+        });
+    });
+
+    // Üstte bilgi göstermek için control
+    const infoLabel = L.control({position: 'topright'});
+    infoLabel.onAdd = function (map) {
+        this._div = L.DomUtil.create('div', 'infoLabel');
+        this._div.innerHTML = 'Başlangıç konumunu seçin';
+        return this._div;
+    };
+    infoLabel.addTo(map);
+
+    // Altta mesafe göstermek için control
+    const distanceLabel = L.control({position: 'bottomleft'});
+    distanceLabel.onAdd = function (map) {
+        this._div = L.DomUtil.create('div', 'distanceLabel');
+        this._div.innerHTML = 'Mesafe: -';
+        return this._div;
+    };
+    distanceLabel.addTo(map);
+
+    // Temizle butonu için control
+    const clearControl = L.control({position: 'bottomright'});
+    clearControl.onAdd = function (map) {
+        this._div = L.DomUtil.create('button', 'clearButton');
+        this._div.innerHTML = 'Temizle';
+        this._div.onclick = function() {
+            clickCount = 0;
+            if (startMarker) map.removeLayer(startMarker);
+            if (endMarker) map.removeLayer(endMarker);
+            if (routePolyline) map.removeLayer(routePolyline);
+            infoLabel._div.innerHTML = 'Başlangıç konumunu seçin';
+            distanceLabel._div.innerHTML = 'Mesafe: -';
+        };
+        return this._div;
+    };
+    clearControl.addTo(map);
+
+    // Harita başlatıldığında invalidateSize çağır
+    setTimeout(() => {
+        map.invalidateSize();
+    }, 100);
+</script>
+</body>
+</html>
